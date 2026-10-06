@@ -51,9 +51,10 @@ public class DivulgaOferta {
                 }
                 case 1 -> {
                     if (aptoLer) {
-                        cadastrarBackupDeClientes(cadastro);
-                        aptoLer = false;
-
+                        // só trava a opção se o arquivo foi lido; se não achou, pode tentar de novo
+                        if (cadastrarBackupDeClientes(cadastro)) {
+                            aptoLer = false;
+                        }
                     } else {
                         System.out.println("Arquivo já cadastrado!");
                     }
@@ -153,7 +154,8 @@ public class DivulgaOferta {
     }
 
     // Lê o arquivo de clientes e insere cada um na ABB de cadastro
-    public static void cadastrarBackupDeClientes(AbbCliente cadastro) {
+    // Devolve true se o arquivo foi lido e false se não foi encontrado
+    public static boolean cadastrarBackupDeClientes(AbbCliente cadastro) {
         String caminhoDoArquivo = "src/arquivos/backupClientes.txt";
         int lidos = 0, repetidos = 0, invalidos = 0;
 
@@ -189,9 +191,11 @@ public class DivulgaOferta {
             leArq.close();
             System.out.println(lidos + " cliente(s) cadastrado(s) do arquivo. Repetidos: "
                     + repetidos + ". Linhas inválidas: " + invalidos + ".");
+            return true;
         } catch (FileNotFoundException e) {
             // Caso o arquivo não seja encontrado
             System.out.println("Arquivo nao encontrado: " + e.getMessage());
+            return false;
         }
 
     }
