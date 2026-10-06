@@ -185,15 +185,16 @@ public class AbbCliente {
     public No removerPorCpf(No p, String cpf) {
         if (p != null) {
             if (cpf.equals(p.dado.getCpf())) {
-                if (p.esq == null && p.dir == null) {
+                if (p.esq == null && p.dir == null) {   // nó a ser removido é nó folha
                     return null;
                 }
-                if (p.esq == null) {
+                if (p.esq == null) {   // sem sub-árvore esquerda: o ponteiro passa a apontar para a direita
                     return p.dir;
                 } else {
-                    if (p.dir == null) {
+                    if (p.dir == null) {   // sem sub-árvore direita: o ponteiro passa a apontar para a esquerda
                         return p.esq;
                     } else {
+                        // dois filhos: o menor nó da sub-árvore direita recebe a sub-árvore esquerda
                         No aux, ref;
                         ref = p.dir;
                         aux = p.dir;
@@ -204,7 +205,7 @@ public class AbbCliente {
                         return ref;
                     }
                 }
-            } else {
+            } else {   // procura o CPF a ser removido na ABB
                 if (cpf.compareTo(p.dado.getCpf()) < 0) {
                     p.esq = removerPorCpf(p.esq, cpf);
                 } else {
