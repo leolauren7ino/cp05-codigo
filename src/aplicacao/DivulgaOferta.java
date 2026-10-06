@@ -15,11 +15,8 @@ public class DivulgaOferta {
      *
      * NOMES E RM dos alunos que compõem o grupo
      *
-     * NOME - RM
-     * NOME - RM
-     * NOME - RM
-     * NOME - RM
-     * NOME - RM
+     * Felipe Durante Slavic - RM 565687
+     * Leonardo Laurentino de Curcio - RM 561455
      *
      */
 
