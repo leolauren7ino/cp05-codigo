@@ -227,7 +227,12 @@ public class DivulgaOferta {
             System.out.print(mensagem);
             try {
                 // aceita vírgula ou ponto como separador decimal
-                return Double.parseDouble(le.nextLine().trim().replace(',', '.'));
+                double valor = Double.parseDouble(le.nextLine().trim().replace(',', '.'));
+                // rejeita negativo, NaN e Infinity (o zero é válido)
+                if (valor >= 0 && !Double.isInfinite(valor)) {
+                    return valor;
+                }
+                System.out.println("Valor inválido. Digite um valor maior ou igual a zero.");
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Digite um valor numérico.");
             }
