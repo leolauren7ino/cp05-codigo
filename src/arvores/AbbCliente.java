@@ -13,7 +13,7 @@ public class AbbCliente {
     /* ---------- 1) Inserção por CPF (ABB de cadastro) ---------- */
 
     // Menor CPF vai para a esquerda, maior ou igual para a direita.
-    // O menu avisa e não chama a inserção se o CPF já existe.
+    // Este método não checa CPF repetido: quem checa é a sobrecarga abaixo.
     public No inserirPorCpf(No p, Cliente c) {
         if (p == null) {
             p = new No();
@@ -28,7 +28,7 @@ public class AbbCliente {
         return p;
     }
 
-    // Retorna false (e não insere) se o CPF já está cadastrado
+    // Só insere se o CPF ainda não está cadastrado; retorna false se já existe
     public boolean inserirPorCpf(Cliente c) {
         if (consultar(c.getCpf()) != null) {
             return false;
