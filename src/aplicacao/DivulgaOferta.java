@@ -1,6 +1,10 @@
 package aplicacao;
 
 
+import arvores.AbbCliente;
+import arvores.Cliente;
+import arvores.FilaCliente;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -11,15 +15,22 @@ public class DivulgaOferta {
      *
      * NOMES E RM dos alunos que compõem o grupo
      *
+     * NOME - RM
+     * NOME - RM
+     * NOME - RM
+     * NOME - RM
+     * NOME - RM
+     *
      */
 
     public static void main(String[] args) {
 
         Scanner le = new Scanner(System.in);
-        /*
-        Instancia ABB cadastro e oferta de clientes.
-        Instancia a filaOferta com implementação escolhida pelo grupo
-         */
+        // ABB de cadastro (organizada por CPF) e ABB de oferta (organizada por total gasto)
+        AbbCliente cadastro = new AbbCliente();
+        AbbCliente oferta = new AbbCliente();
+        // Fila de clientes a contactar (lista encadeada)
+        FilaCliente filaOferta = new FilaCliente();
 
         int opcao, op;
         String nome, whatsapp, cpf;
@@ -32,20 +43,18 @@ public class DivulgaOferta {
             System.out.println(" 3 - Oferta de novo produto/promocacao");
             System.out.println(" 4 - Entrar no Submenu ");
             System.out.println(" 5 - Remove um cliente do cadastro");
-            System.out.print("Opção: ");
-            opcao = le.nextInt();
+            opcao = lerInt(le, "Opção: ");
             switch (opcao) {
                 case 0 -> {
                     System.out.println("\n\nClientes que nao aceitaram ou nao estavam adequados para a oferta");
-                    /*
-                     * Apresenta todos os clientes que nao aceitaram nenhuma oferta
-                     * Para isso na classe AbbClientes deve haver um metodo para essa tarefa
-                     */
-
+                    // Lista os clientes do cadastro que ainda estão aptos
+                    if (cadastro.listarAptos() == 0) {
+                        System.out.println("Nenhum cliente nessa situação.");
+                    }
                 }
                 case 1 -> {
                     if (aptoLer) {
-                        //cadastrarBackupDeClientes(cadastro);
+                        cadastrarBackupDeClientes(cadastro);
                         aptoLer = false;
 
                     } else {
@@ -53,43 +62,47 @@ public class DivulgaOferta {
                     }
                 }
                 case 2 -> {
-                    System.out.print("Digite nome: ");
-                    le.nextLine();
-                    nome = le.nextLine();
-                    System.out.print("Digite CPF: ");
-                    cpf = le.next();
-                    System.out.print("Whatsapp: ");
-                    whatsapp = le.next();
-                    System.out.print("Informe total gasto do cliente R$: ");
-                    totalGasto = le.nextDouble();
+                    nome = lerTexto(le, "Digite nome: ");
+                    cpf = lerTexto(le, "Digite CPF: ");
+                    whatsapp = lerTexto(le, "Whatsapp: ");
+                    totalGasto = lerDouble(le, "Informe total gasto do cliente R$: ");
 
-                    /*
-                     * Intancia um objeto da classe Cliente e insere na ABB de cadastro
-                     */
+                    // Instancia o Cliente e insere na ABB de cadastro (CPF repetido não entra)
+                    Cliente novo = new Cliente(nome, cpf, whatsapp, totalGasto);
+                    if (cadastro.inserirPorCpf(novo)) {
+                        System.out.println("Cliente cadastrado!");
+                    } else {
+                        System.out.println("CPF já cadastrado. Cliente não inserido.");
+                    }
                 }
                 case 3 -> {
-                    System.out.print("Qual o valor de saldo mínimo exigido: R$ ");
-                    totalGasto = le.nextDouble();
+                    totalGasto = lerDouble(le, "Qual o valor de saldo mínimo exigido: R$ ");
 
-                    /*
-                     * Percorrendo a ABB de cadastro gera ABB oferta usando como criterio de organizacao
-                     * o total de gasto do cliente.
-                     *
-                     * Usando um metodo de percurso gerar uma fila de clientes para contactar via whatsapp,
-                     * em ordem decrescentes de gastos (o primeiro cliente deve ser o com maior valor de gasto.
-                     *
-                     * Esvazia ABB oferta.
-                     */
+                    // Percorre o cadastro e gera a ABB de oferta (organizada por gasto)
+                    cadastro.gerarAbbOferta(oferta, totalGasto);
+                    if (oferta.estaVazia()) {
+                        System.out.println("Nenhum cliente elegível para essa oferta.");
+                    } else {
+                        // Percurso da ABB de oferta gera a fila: maior gasto primeiro
+                        oferta.gerarFila(filaOferta);
+                        // Esvazia a ABB de oferta para a próxima oferta
+                        oferta.esvaziar();
 
-
-
-                    /*
-                     * Nesse trecho de programa que eh simulada a tentativa de fazer o contato com cada um dos clientes
-                     * presentes na fila. Ate nao ter mais clientes para contactar.
-                     *
-                     * Cada cliente que aceita a oferta tem o atributo apto para oferta alterado para false no seu cadastro
-                     */
-
+                        // Simula o contato: um cliente por vez até esvaziar a fila
+                        while (!filaOferta.estaVazia()) {
+                            Cliente atual = filaOferta.desenfileirar();
+                            System.out.println("\nContactar cliente:");
+                            atual.apresentar();
+                            if (lerSimNao(le, "O cliente aceitou a oferta? (s/n): ")) {
+                                System.out.println("Cliente " + atual.getNome() + " ACEITOU a oferta!");
+                                // Atualiza o cadastro (busca por CPF): não está mais apto
+                                cadastro.marcarNaoApto(atual.getCpf());
+                            } else {
+                                System.out.println("Cliente " + atual.getNome() + " RECUSOU a oferta.");
+                            }
+                        }
+                        System.out.println("\nFila de contatos finalizada.");
+                    }
                 }
                 case 4 -> {
                     do {
@@ -97,25 +110,25 @@ public class DivulgaOferta {
                         System.out.println("\t 2) Apresenta o total de gasto de todos os clientes");
                         System.out.println("\t 3) Apresenta a quantidade de clientes com saldo acima de um valor a ser consultado");
                         System.out.println("\t 4) Volta menu principal");
-                        op = le.nextInt();
+                        op = lerInt(le, "\t Opção: ");
                         switch (op) {
                             case 1:
-                                System.out.print("Informe CPF para consulta");
-                                cpf = le.next();
-
-                                /*
-                                Utilizando metodo de consulta definido na classe ABB procurar cliente por cpf
-                                 */
+                                cpf = lerTexto(le, "Informe CPF para consulta: ");
+                                if (!cadastro.consultarEApresentar(cpf)) {
+                                    System.out.println("CPF não encontrado.");
+                                }
                                 break;
                             case 2:
-                                /*
-                                Utilizando metodo especifico da classe ABB calcula o total de gastos de todos os clientes
-                                 */
+                                if (cadastro.estaVazia()) {
+                                    System.out.println("Cadastro vazio.");
+                                } else {
+                                    System.out.printf("Total de gastos de todos os clientes: R$ %.2f%n", cadastro.somaGastos());
+                                }
                                 break;
                             case 3:
-                                /*
-                                Utilizando metodo especifico da classe ABB obtém quantidade de clientes com gastos acima de
-                                 */
+                                totalGasto = lerDouble(le, "Informe o valor: R$ ");
+                                System.out.println("Clientes com gasto acima de R$ " + totalGasto + ": "
+                                        + cadastro.contaAcima(totalGasto));
                                 break;
                             case 4:
                                 System.out.println("Retornando Menu Principal");
@@ -126,11 +139,12 @@ public class DivulgaOferta {
                     } while (op != 4);
                 }
                 case 5 -> {
-                    System.out.print("Informe CPF do cliente que deseja ser retirado do cadastro");
-                    cpf = le.next();
-                    /*
-                    Remove da ABB de cadastro o cliente escolhido pelo CPF
-                     */
+                    cpf = lerTexto(le, "Informe CPF do cliente que deseja ser retirado do cadastro: ");
+                    if (cadastro.removerPorCpf(cpf)) {
+                        System.out.println("Cliente removido do cadastro.");
+                    } else {
+                        System.out.println("CPF não encontrado.");
+                    }
                 }
                 default -> System.out.println("Opção inválida");
             }
@@ -141,8 +155,10 @@ public class DivulgaOferta {
 
     }
 
-    public static void cadastrarBackupDeClientes(/*AbbCliente cadastro*/) {
+    // Lê o arquivo de clientes e insere cada um na ABB de cadastro
+    public static void cadastrarBackupDeClientes(AbbCliente cadastro) {
         String caminhoDoArquivo = "src/arquivos/backupClientes.txt";
+        int lidos = 0, repetidos = 0, invalidos = 0;
 
         try {
             // Criar um objeto File com o caminho do arquivo
@@ -155,22 +171,79 @@ public class DivulgaOferta {
             while (leArq.hasNextLine()) {
                 // Ler a próxima linha
                 String linha = leArq.nextLine();
-                System.out.println("\n" + linha);
+                if (linha.trim().isEmpty()) {
+                    continue;
+                }
                 String[] partes = linha.split(",");
-
-                double totalGasto = Double.parseDouble(partes[3]);
-                //Cliente cliente = new Cliente(partes[0], partes[1], partes[2], totalGasto);
-                /*
-                insere na Abb cadastro o cliente lido do arquivo
-                 */
+                try {
+                    double totalGasto = Double.parseDouble(partes[3].trim());
+                    Cliente cliente = new Cliente(partes[0].trim(), partes[1].trim(), partes[2].trim(), totalGasto);
+                    // insere na Abb cadastro o cliente lido do arquivo
+                    if (cadastro.inserirPorCpf(cliente)) {
+                        lidos++;
+                    } else {
+                        repetidos++;
+                    }
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    invalidos++;
+                }
             }
             // Fechar o objeto da classe Scanner leArq
             leArq.close();
+            System.out.println(lidos + " cliente(s) cadastrado(s) do arquivo. Repetidos: "
+                    + repetidos + ". Linhas inválidas: " + invalidos + ".");
         } catch (FileNotFoundException e) {
             // Caso o arquivo não seja encontrado
             System.out.println("Arquivo nao encontrado: " + e.getMessage());
         }
 
+    }
+
+    // Leituras pelo teclado: tudo com nextLine para não sobrar quebra de linha no buffer
+
+    public static String lerTexto(Scanner le, String mensagem) {
+        String texto;
+        do {
+            System.out.print(mensagem);
+            texto = le.nextLine().trim();
+        } while (texto.isEmpty());
+        return texto;
+    }
+
+    public static int lerInt(Scanner le, String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            try {
+                return Integer.parseInt(le.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Digite um número inteiro.");
+            }
+        }
+    }
+
+    public static double lerDouble(Scanner le, String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            try {
+                // aceita vírgula ou ponto como separador decimal
+                return Double.parseDouble(le.nextLine().trim().replace(',', '.'));
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Digite um valor numérico.");
+            }
+        }
+    }
+
+    public static boolean lerSimNao(Scanner le, String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            String resp = le.nextLine().trim().toLowerCase();
+            if (resp.equals("s")) {
+                return true;
+            } else if (resp.equals("n")) {
+                return false;
+            }
+            System.out.println("Responda com s ou n.");
+        }
     }
 
 }
