@@ -125,8 +125,8 @@ public class DivulgaOferta {
                                 break;
                             case 3:
                                 totalGasto = lerDouble(le, "Informe o valor: R$ ");
-                                System.out.println("Clientes com gasto acima de R$ " + totalGasto + ": "
-                                        + cadastro.contaAcima(totalGasto));
+                                System.out.printf("Clientes com gasto acima de R$ %.2f: %d%n",
+                                        totalGasto, cadastro.contaAcima(totalGasto));
                                 break;
                             case 4:
                                 System.out.println("Retornando Menu Principal");
